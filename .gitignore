@@ -205,3 +205,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+BRIEF.md
+NOTES_COMPREHENSION.md
+PLAN_DEPLOIEMENT.md
+Pistes_de_travail.md
+notebooks_deploiement/
