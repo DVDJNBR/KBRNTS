@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: davidbreau
+data:
+  MYSQL_HOST: mysql-service
+  MYSQL_PORT: "3306"
+  MYSQL_USER: root
+  MYSQL_DATABASE: clients

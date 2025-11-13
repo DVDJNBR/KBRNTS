@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+  namespace: davidbreau
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: sengsathit/brief-api:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: MYSQL_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: MYSQL_HOST
+        - name: MYSQL_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: MYSQL_PORT
+        - name: MYSQL_USER
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: MYSQL_USER
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: MYSQL_DATABASE
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
