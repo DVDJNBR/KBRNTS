@@ -9,4 +9,4 @@ spec:
   resources:
     requests:
       storage: 5Gi # 1Gi / 5Gi / 10Gi
-  storageClassName: standard #  standard / managed-premium
+  storageClassName: default # default / managed / managed-premium
