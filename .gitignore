@@ -211,5 +211,6 @@ NOTES_COMPREHENSION.md
 PLAN_DEPLOIEMENT.md
 Pistes_de_travail.md
 notebooks_deploiement/
+notebooks_streamlit/
 test_report_*.md
 !test_report_final.md

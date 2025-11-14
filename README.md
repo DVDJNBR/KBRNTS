@@ -6,7 +6,16 @@ Projet de déploiement d'une API Python et d'une base de données MySQL sur Azur
 
 - **MySQL** : Base de données avec stockage persistant (PVC 5Gi)
 - **API Python** : API REST exposant des endpoints CRUD pour gérer des clients
-- **Ingress** : Exposition publique de l'API avec préfixe `/davidbreau`
+- **Streamlit** : Interface web pour gérer les clients (bonus)
+- **Ingress** : Exposition publique du front Streamlit avec préfixe `/davidbreau`
+
+### Architecture complète (avec bonus)
+
+```
+Internet → Ingress → Streamlit → API (interne) → MySQL
+```
+
+Le front Streamlit est le seul composant exposé publiquement. Il communique avec l'API en interne via le service `api-service:8000`.
 
 ## 🚀 Déploiement
 
@@ -51,7 +60,14 @@ kubectl get ingress -n davidbreau
 │   ├── api-configmap.yaml         # ConfigMap pour l'API
 │   ├── api-deployment.yaml        # Deployment API Python
 │   ├── api-service.yaml           # Service API (ClusterIP)
-│   └── ingress.yaml               # Ingress avec rewrite-target
+│   ├── streamlit-deployment.yaml  # Deployment Streamlit (bonus)
+│   ├── streamlit-service.yaml     # Service Streamlit (bonus)
+│   └── ingress.yaml               # Ingress exposant le front
+├── streamlit-app/
+│   ├── app.py                     # Application Streamlit
+│   ├── pyproject.toml             # Dépendances Python
+│   ├── Dockerfile                 # Image Docker
+│   └── .env                       # Configuration (non versionné)
 ├── test_api.sh                    # Script de test automatisé
 ├── test_report_final.md           # Rapport de test (preuve de fonctionnement)
 └── README.md
@@ -125,11 +141,25 @@ L'API utilise les variables suivantes (définies dans la ConfigMap et le Secret)
 | `api-config` | ConfigMap | Configuration de l'API |
 | `api-deployment` | Deployment | Pod API Python avec probes |
 | `api-service` | Service | ClusterIP interne (8000) |
-| `api-ingress` | Ingress | Exposition publique avec rewrite |
+| `streamlit-deployment` | Deployment | Pod Streamlit (bonus) |
+| `streamlit-service` | Service | ClusterIP interne (8501) |
+| `api-ingress` | Ingress | Exposition publique du front |
 
-## 🎯 Endpoints publics
+## 🎯 Accès public
 
-Base URL : `http://<INGRESS_IP>/davidbreau`
+### Interface Streamlit (bonus)
+
+URL : `http://<INGRESS_IP>/davidbreau`
+
+L'interface Streamlit permet de :
+- 📋 Lister tous les clients
+- ➕ Ajouter un nouveau client
+- 🔍 Rechercher un client par ID
+- 🗑️ Supprimer un client
+
+### Endpoints API (internes uniquement)
+
+L'API n'est plus accessible directement depuis l'extérieur. Elle est appelée en interne par Streamlit via `api-service:8000`.
 
 | Méthode | Endpoint | Description |
 |---------|----------|-------------|
@@ -167,6 +197,33 @@ kubectl exec -it <mysql-pod-name> -n davidbreau -- mysql -u root -p
 - L'API attend la variable `MYSQL_DB` (pas `MYSQL_DATABASE`)
 - Le PVC utilise le storageClass `default` (WaitForFirstConsumer)
 - L'Ingress utilise l'annotation `rewrite-target` pour retirer le préfixe
+
+## 🎁 Bonus : Front-end Streamlit
+
+Le projet inclut un front-end Streamlit dockerisé et déployé sur Kubernetes.
+
+### Fonctionnalités
+
+- Interface web intuitive pour gérer les clients
+- Communication interne avec l'API (pas d'exposition publique de l'API)
+- Déployé sur le cluster AKS
+
+### Image Docker
+
+L'image est disponible publiquement sur Docker Hub :
+```
+davidbreau/streamlit-clients-app:latest
+```
+
+### Tester en local
+
+```bash
+docker run -p 8501:8501 \
+  -e API_URL=http://4.178.34.136/davidbreau \
+  davidbreau/streamlit-clients-app:latest
+```
+
+---
 
 ## 👨‍💻 Auteur
 
